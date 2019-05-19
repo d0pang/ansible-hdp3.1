@@ -1,0 +1,14 @@
+---
+- name: Deploy MIT KDC
+  hosts: master-nodes
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - mit-kdc
+
+#- name: Deploy Kerberos Client
+#  hosts: all
+#  any_errors_fatal: true
+#  become: yes
+#  roles:
+#    - krb5-client

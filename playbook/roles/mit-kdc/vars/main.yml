@@ -1,0 +1,25 @@
+---
+kdc_packages:
+  - krb5-server
+  - krb5-libs
+  - krb5-workstation
+kdc_service_name: krb5kdc
+kadmin_service_name: kadmin
+
+kdc_init_command: kdb5_util create -s -W
+kadmin_command: kadmin.local
+
+kdc_config_file: /var/kerberos/krb5kdc/kdc.conf
+kdc_acl_file: /var/kerberos/krb5kdc/kadm5.acl
+kdc_database_file: /var/kerberos/krb5kdc/principal
+
+security_options:
+  external_hostname: 'cheny0.field.hortonworks.com'                                   # if this is empty, Ansible will install and prepare the MIT KDC on the Ambari node
+  realm: 'FIELD.HORTONWORKS.COM'
+  admin_principal: 'admin'                                # the Kerberos principal that has the permissions to create new users (don't append the realm)
+  admin_password: 'chenyang'
+  kdc_master_key: 'chenyang'                             # only used when security is set to 'mit-kdc'
+  ldap_url: 'ldaps://groups[master-nodes]:636'                  # only used when security is set to 'active-directory'
+  container_dn: 'OU=hadoop,DC=FIELD,DC=HORTONWORKS,DC=COM'             # only used when security is set to 'active-directory'
+  http_authentication: yes                                # set to yes to enable HTTP authentication (SPNEGO)
+

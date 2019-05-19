@@ -1,0 +1,16 @@
+[master-nodes]
+hadoop1 ansible_host=192.168.10.21 ambari_server=true
+
+[second-master-nodes]
+hadoop2 ansible_host=192.168.10.22
+
+[slave-nodes]
+hadoop1 ansible_host=192.168.10.21
+hadoop2 ansible_host=192.168.10.22
+hadoop3 ansible_host=192.168.10.23
+hadoop4 ansible_host=192.168.10.24
+hadoop5 ansible_host=192.168.10.25
+hadoop6 ansible_host=192.168.10.26
+
+[repo]
+hadoop1 ansible_host=192.168.10.21 ambari_server=true

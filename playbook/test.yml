@@ -1,0 +1,13 @@
+- name: Gather facts from all nodes
+  hosts: all
+  any_errors_fatal: true
+  become: yes
+
+- include: "set_variables.yml"
+
+- hosts: master-nodes
+  become: yes
+  become_user: root
+  any_errors_fatal: true
+  roles:
+    - test

@@ -1,0 +1,7 @@
+---
+- name: Deploy Ambari Agent
+  hosts: all
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - ambari-agent

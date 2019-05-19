@@ -1,0 +1,20 @@
+---
+- include: "set_variables.yml"
+
+- name: patch ambari server 2.6.1.5-3 to solve block of installed hadoop_* zookeeper_* oozie_* packages
+  hosts: all
+  gather_facts: False
+  tasks:
+  - replace:
+      #dest: /usr/lib/python2.6/site-packages/resource_management/libraries/script/script.py
+      dest: /usr/lib/ambari-agent/lib/resource_management/libraries/script/script.py
+      regexp: 'package_version = None'
+      replace: '#package_version = None'
+    when: ambari_version == '2.6.2.2-1'
+
+- name: Apply the ambari-config role to the ambari-server group
+  hosts: ambari-server
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - ambari-config

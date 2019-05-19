@@ -1,0 +1,32 @@
+---
+
+- name: Install the Kerberos client package
+  package:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items: "{{ kerberos_client_package }}"
+
+- name: Configure profile for KRB5_CONFIG
+  lineinfile:
+    dest: "/etc/profile"
+    line: "export KRB5_CONFIG={{ kdc_config_file }}"
+    insertbefore: EOF
+    state: present
+
+- name: Set KRB5_CONFIG
+  shell: "export KRB5_CONFIG={{ kdc_config_file }}"
+
+- name: Echo KRB5_CONFIG
+  shell: "echo $KRB5_CONFIG"
+
+- name: Create Directory for KDC server
+  file: path="{{ item }}" state=directory
+  with_items: "/var/kerberos/krb5kdc"
+
+- name: Upload the krb5.conf file
+  template:
+    src: krb5.conf.j2
+    dest: "{{kdc_config_file}}"
+    mode: 0644
+    force: yes

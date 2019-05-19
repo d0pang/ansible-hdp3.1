@@ -1,0 +1,48 @@
+---
+
+- name: Deploy HTTPD REPO
+  hosts: repo
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - offline_repo
+
+- hosts: all
+  any_errors_fatal: true
+  become: yes
+  vars_files: 
+    - ./roles/offline_repo/defaults/main.yml 
+  tasks: 
+    - name: Install lib Python
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "libselinux-python"
+
+    - name: Deploy Ambari Repo Files
+      template: 
+         src: ./roles/offline_repo/templates/ambari.repo 
+         dest: "/etc/yum.repos.d/ambari.repo"
+
+    - name: print install_hdf
+      debug:
+        msg: "{{ hostvars[groups['repo']|sort|list|first].install_hdf }}"
+
+    - name: Deploy HDF Repo Files
+      template:
+         src: ./roles/offline_repo/templates/hdf.repo
+         dest: "/etc/yum.repos.d/hdf.repo"
+      when: hostvars[groups['repo']|sort|list|first].install_hdf is defined and hostvars[groups['repo']|sort|list|first].install_hdf
+
+    - block:
+        - name: Deploy HDP Repo Files
+          template:
+             src: ./roles/offline_repo/templates/hdp.repo
+             dest: "/etc/yum.repos.d/hdp.repo"
+
+        - name: Deploy HDP-GPL Repo Files
+          template:
+             src: ./roles/offline_repo/templates/hdp.gpl.repo
+             dest: "/etc/yum.repos.d/hdp.gpl.repo"
+      when: hostvars[groups['repo']|sort|list|first].install_hdp is defined and hostvars[groups['repo']|sort|list|first].install_hdp

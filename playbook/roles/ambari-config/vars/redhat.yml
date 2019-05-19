@@ -1,0 +1,18 @@
+---
+hdp_minor_version: "{{ hdp_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','') }}"
+hdp_major_version: "{{ hdp_minor_version.split('.').0 }}"
+hdf_minor_version: "{{ hdf_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','') }}"
+hdf_major_version: "{{ hdf_minor_version.split('.').0 }}"
+hdp_utils_minor_version: "{{ utils_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','') }}"
+
+hdp_main_repo_url: "http://{{ ansible_fqdn }}/hdp/HDP/centos{{ ansible_distribution_major_version }}/{{ hdp_version }}"
+hdf_main_repo_url: "http://{{ ansible_fqdn }}/hdf/HDF/centos{{ ansible_distribution_major_version }}/{{ hdf_version }}"
+utils_repo_url: "http://{{ ansible_fqdn }}/hdp/HDP-UTILS/centos{{ ansible_distribution_major_version }}/{{ utils_version }}"
+utils_hdf_repo_url: "http://{{ ansible_fqdn }}/hdf/HDP-UTILS/centos{{ ansible_distribution_major_version }}/{{ utils_version }}"
+gpl_repo_url: "http://{{ ansible_fqdn }}/hdp/HDP-GPL/centos{{ ansible_distribution_major_version }}/{{ hdp_version }}"
+
+main_os_target: "operating_systems/redhat{{ ansible_distribution_major_version }}"
+
+vdf_url: "http://{{ ansible_fqdn }}/hdp/HDP/centos{{ ansible_distribution_major_version }}/{{ hdp_version }}/HDP-{{ hdp_version }}.xml"
+
+hdf_vdf_url: "http://{{ ansible_fqdn }}/hdf/HDF/centos{{ ansible_distribution_major_version }}/{{ hdf_version }}/HDF-{{ hdf_version }}.xml"

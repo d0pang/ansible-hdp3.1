@@ -1,0 +1,16 @@
+---
+
+#if database_options.external_hostname is not empty, then need to invoke database role here
+- name: Deploy Database
+  hosts: admin-nodes
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - database
+
+- name: Deploy Ambari Server
+  hosts: admin-nodes
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - ambari-server

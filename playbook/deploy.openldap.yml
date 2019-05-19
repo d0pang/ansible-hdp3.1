@@ -1,0 +1,7 @@
+---
+- name: Deploy Openldap
+  hosts: admin-nodes
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - openldap

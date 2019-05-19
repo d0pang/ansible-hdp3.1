@@ -1,0 +1,22 @@
+---
+
+### Will Prepare the Nodes 
+- include: "prepare_nodes.yml"
+## Install Repository
+- include: "deploy.httpd.yml"
+## Install Ambari Agent
+- include: "install_ambari.yml"
+  tags: install_ambari
+
+### Install Openldap
+#- include: "deploy.openldap.yml"
+## Install Kerberos
+#- include: "deploy.kdc.yml"
+
+#### Configure Ambari
+#- include: "configure_ambari.yml"
+#
+#- include: "apply_blueprint.yml"
+#  tags: blueprint
+#
+#- include: "post_install.yml"

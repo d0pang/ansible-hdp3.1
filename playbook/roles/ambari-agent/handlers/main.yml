@@ -1,0 +1,6 @@
+---
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Restart ambari-agent
+  service: name=ambari-agent state=restarted

@@ -1,0 +1,148 @@
+---
+
+- name: Remove Existing Repo File
+  file: path={{ item }} state=absent
+  with_items:
+    - /etc/yum.repos.d/ambari.repo
+    - /etc/yum.repos.d/hdp.repo
+    - /etc/yum.repos.d/hdp.gpl.repo
+    - /etc/yum.repos.d/hdf.repo
+
+- name: Install Yum Utils & Repo
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "libselinux-python"
+    - "yum-utils"
+    - "createrepo"
+    - "yum-plugin-priorities"
+    - "httpd"
+    - "rsync"
+    - "wget"
+    - "curl"
+
+- name: chmod log dir
+  file:
+    path: /var/log/httpd
+    state: directory
+    mode: "{{ var_log_httpd_permission | default('0755') }}"
+  tags: ['httpd']
+
+- name: chkconfig on
+  service:
+    name: httpd
+    enabled: "{{ httpd_service_on | default('no') }}"
+  tags: ['httpd']
+
+- name: Create Directory for HTTP server
+  file: path="{{ item }}" state=directory
+  with_items:
+     - "/var/www/html/hdp"
+     - "/var/www/html/hdf"
+
+- name: Deploy Ambari Repo Files
+  template:
+     src: ambari.repo
+     dest: "/etc/yum.repos.d/ambari.repo"
+
+
+#deploy hpd repository
+- block:
+    - name: Deploy HDP Repo Files
+      template:
+         src: hdp.repo
+         dest: "/etc/yum.repos.d/hdp.repo"
+
+    - name: Deploy HDP-GPL Repo Files
+      template:
+         src: hdp.repo
+         dest: "/etc/yum.repos.d/hdp.gpl.repo"
+  when: install_hdp is defined and install_hdp
+
+#deploy hdf repository
+- name: Deploy HDF Repo Files
+  template:
+     src: hdf.repo
+     dest: "/etc/yum.repos.d/hdf.repo"
+  when: install_hdf is defined and install_hdf
+
+- name: Debug ambari.repo
+  shell: cat /etc/yum.repos.d/ambari.repo
+
+## download the ambari tarball
+#- name: download the ambari tarball
+#  get_url:
+#    url: "http://public-repo-1.hortonworks.com/ambari/centos{{ ansible_distribution_major_version }}/2.x/updates/{{ ambari_version.split('-')[0] }}/ambari-{{ ambari_version.split('-')[0] }}-centos7.tar.gz"
+#    dest: "/var/www/html/ambari.tar.gz"
+
+# unzip the ambari tarball
+- name: unzip the ambari tarball
+  command: tar -zxvf /root/hdp/HDP3.1.0/ambari-2.7.3.0-centos7.tar.gz -C /var/www/html/
+
+# download and extract hdp tarballs
+- block:
+    # download the hdp tarball
+#    - name: download the hdp tarball
+#      get_url:
+#        url: "http://public-repo-1.hortonworks.com/HDP/centos{{ ansible_distribution_major_version }}/2.x/updates/{{ hdp_version.split('-')[0] }}/HDP-{{ hdp_version.split('-')[0] }}-centos7-rpm.tar.gz"
+#        dest: "/var/www/html/hdp/hdp.tar.gz"
+
+    # unzip the hdp tarball
+    - name: unzip the hdp tarball
+      command: tar -zxvf /root/hdp/HDP3.1.0/HDP-3.1.0.0-centos7-rpm.tar.gz -C /var/www/html/hdp/
+
+    # download the hdp-utilits tarball
+#    - name: download the hdp utilits tarball
+#      get_url:
+#        url: "http://public-repo-1.hortonworks.com/HDP-UTILS-{{ utils_version }}/repos/centos{{ ansible_distribution_major_version }}/HDP-UTILS-{{ utils_version }}-centos7.tar.gz"
+#        dest: "/var/www/html/hdp/hdp-utilits.tar.gz"
+
+    # unzip the hdp-utilits tarball
+    - name: unzip the hdp-utilits tarball
+      command: tar -zxvf /root/hdp/HDP3.1.0/HDP-UTILS-1.1.0.22-centos7.tar.gz -C /var/www/html/hdp/
+
+
+    # download the hdp-gpl tarball
+#    - name: download the hdp tarball
+#      get_url:
+#        url: "http://public-repo-1.hortonworks.com/HDP-GPL/centos{{ ansible_distribution_major_version }}/2.x/updates/{{ hdp_version.split('-')[0] }}/HDP-GPL-{{ hdp_version.split('-')[0] }}-centos7-gpl.tar.gz"
+#        dest: "/var/www/html/hdp.gpl.tar.gz"
+
+    # unzip the hdp-gpl tarball
+    - name: unzip the hdp-gpl tarball
+      command: tar -zxvf /root/hdp/HDP3.1.0/HDP-GPL-3.1.0.0-centos7-gpl.tar.gz -C /var/www/html/hdp/
+  when: install_hdp is defined and install_hdp
+
+
+- name: Start HTTPD Server
+  systemd: name=httpd state=started
+
+
+
+# download & extract hdf rpm tarball
+- block:
+    - name: download the ambari server management pack tarball
+      get_url:
+        url: "http://public-repo-1.hortonworks.com/HDF/centos{{ ansible_distribution_major_version }}/3.x/updates/{{ hdf_version.split('-')[0] }}/tars/hdf_ambari_mp/hdf-ambari-mpack-{{ hdf_version }}.tar.gz"
+        dest: "/tmp/hdf-ambari-mpack-{{ hdf_version }}.tar.gz"
+
+    - name: download the hdf tarball
+      get_url:
+        url: "http://public-repo-1.hortonworks.com/HDF/centos{{ ansible_distribution_major_version }}/3.x/updates/{{ hdf_version.split('-')[0] }}/HDF-{{ hdf_version.split('-')[0] }}-centos{{ ansible_distribution_major_version }}-rpm.tar.gz"
+        dest: "/var/www/html/hdf/hdf.tar.gz"
+
+    # unzip the hdf tarball
+    - name: unzip the hdf tarball
+      command: tar -zxvf /var/www/html/hdf/hdf.tar.gz -C /var/www/html/hdf/
+
+    # download the hdp-utilits tarball
+    - name: download the hdp utilis tarball
+      get_url:
+        url: "http://public-repo-1.hortonworks.com/HDP-UTILS-{{ utils_version }}/repos/centos{{ ansible_distribution_major_version }}/HDP-UTILS-{{ utils_version }}-centos7.tar.gz"
+        dest: "/var/www/html/hdf/hdp-utilits.tar.gz"
+
+    # unzip the hdp-utilits tarball
+    - name: unzip the hdp-utilits tarball
+      command: tar -zxvf /var/www/html/hdf/hdp-utilits.tar.gz -C /var/www/html/hdf/
+  when: install_hdf is defined and install_hdf

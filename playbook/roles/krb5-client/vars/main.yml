@@ -1,0 +1,15 @@
+---
+kerberos_client_package: krb5-workstation
+security_options:
+  external_hostname: 'cheny0.field.hortonworks.com'                                   # this is the kdc hostname
+  realm: 'FIELD.HORTONWORKS.COM'
+  admin_principal: 'admin'                                # the Kerberos principal that has the permissions to create new users (don't append the realm)
+  admin_password: 'chenyang'
+  kdc_master_key: 'chenyang'                             # only used when security is set to 'mit-kdc'
+  ldap_url: 'ldaps://groups[master-nodes]:636'                  # only used when security is set to 'active-directory'
+  container_dn: 'OU=hadoop,DC=FIELD,DC=HORTONWORKS,DC=COM'             # only used when security is set to 'active-directory'
+  http_authentication: yes                                # set to yes to enable HTTP authentication (SPNEGO)
+
+kdc_config_file: /var/kerberos/krb5kdc/kdc.conf
+kdc_acl_file: /var/kerberos/krb5kdc/kadm5.acl
+kdc_database_file: /var/kerberos/krb5kdc/principal

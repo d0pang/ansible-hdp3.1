@@ -1,0 +1,90 @@
+---
+# defaults file for openldap
+#openldap_default_user: openldap
+#openldap_defaults_file: /etc/slapd
+env:
+  RUNLEVEL: 1
+
+openldap_packages:
+  - openldap 
+  - compat-openldap 
+  - openldap-clients 
+  - openldap-servers 
+  - openldap-servers-sql 
+  - openldap-devel
+
+openldap_defaults_file: /etc/default/slapd
+
+openldap_default_user: openldap
+openldap_default_group: openldap
+openldap_default_sentinel_file: /etc/sldap/noslapd
+
+openldap_server_pidfile: /var/run/slapd/slapd.pid
+openldap_server_argsfile: /var/run/slapd/slapd.args
+openldap_server_modulepath: /usr/lib/sldap
+openldap_server_directory: /var/lib/ldap
+openldap_server_configuration: /etc/sldap/slapd.conf
+openldap_client_configuration: /etc/sldap/ldap.conf
+
+openldap_schema_directory: /etc/sldap/schema
+
+
+
+openldap_domain: euclide.apec.fr
+openldap_organization: euclide.apec
+openldap_admin_password: 'Apec@2018!'
+
+openldap_default_services: ldap:/// ldapi:///
+openldap_default_options: ""
+
+openldap_server_schemas:
+  - core
+  - cosine
+  - inetorgperson
+openldap_server_loglevel: none
+openldap_server_modules:
+  - back_hdb
+  - syncprov
+openldap_server_database: hdb
+openldap_server_suffix: dc=EUCLIDE,dc=APEC,dc=FR
+openldap_server_rootdn: cn=Manager,dc=EUCLIDE,dc=APEC,dc=FR
+openldap_server_rootpw: 'Apec@2018!'
+openldap_server_indexes:
+  - objectClass,cn eq
+  - entryCSN,entryUUID eq
+openldap_server_acls:
+  - to attrs=userPassword by anonymous auth by self write by * none
+  - to * by self write by * none
+openldap_server_password_hash: "{SSHA}"
+
+openldap_dbconfig_set_cachesize: 2097152
+openldap_dbconfig_set_lk_max_objects: 1500
+openldap_dbconfig_set_lk_max_locks: 1500
+openldap_dbconfig_set_lk_max_lockers: 1500
+
+openldap_client_uri: ldap://groups[admin-nodes]
+openldap_client_base: dc=EUCLIDE,dc=APEC,dc=FR
+openldap_client_binddn: cn=Manager,dc=EUCLIDE,dc=APEC,dc=FR
+openldap_client_sizelimit: 0
+openldap_client_timelimit: 0
+
+openldap_sync_syncprov_checkpoint: 50 10
+openldap_sync_syncprov_sessionlog: 100
+
+openldap_sync_consumer: False
+openldap_sync_syncrepl_rid: 001
+openldap_sync_syncrepl_provider: ldap://groups[admin-nodes]
+openldap_sync_syncrepl_type: refreshAndPersist
+openldap_sync_syncrepl_interval: 00:00:05:00
+openldap_sync_syncrepl_searchbase: "{{ openldap_server_suffix}}"
+openldap_sync_syncrepl_binddn: cn=admin,dc=EUCLIDE,dc=APEC,dc=FR
+openldap_sync_syncrepl_credentials: secret
+openldap_sync_syncrepl_starttls: "no"
+openldap_sync_syncrepl_retry: 60 +
+openldap_sync_syncrepl_bindmethod: simple
+openldap_sync_syncrepl_timeout: 0
+openldap_sync_syncrepl_network_timeout: 0
+openldap_sync_syncrepl_keepalive: 0:0:0
+openldap_sync_syncrepl_filter: (objectclass=*)
+openldap_sync_syncrepl_scope: sub
+openldap_sync_syncrepl_schemachecking: off

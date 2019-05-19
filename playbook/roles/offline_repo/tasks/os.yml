@@ -1,0 +1,37 @@
+---
+
+- hosts: repo
+  any_errors_fatal: true
+  become: yes
+  tasks:
+    - name: Install Yum Utils & Repo
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "libselinux-python"
+        - "yum-utils"
+        - "createrepo"
+        - "yum-plugin-priorities"
+        - "httpd"
+
+    - name: Create Directory for HTTP server
+      file: path="{{ item }}" state=directory
+      with_items:
+        - "/mnt/cdrom"
+        - "/var/www/html/iso"
+
+    - name: mount iso to cd-room
+      command: mount -o loop /root/CentOS-7-x86_64-DVD-1810.iso /mnt/cdrom/
+
+    - name: copy file to http dir
+      copy:
+        src: /mnt/cdrom/
+        dest: /var/www/html/iso/
+
+    - name: Deploy local_os Repo Files
+      template:
+        src: local_os.repo
+        dest: "/etc/yum.repos.d/local_os.repo"
+
+

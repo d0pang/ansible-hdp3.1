@@ -1,0 +1,97 @@
+---
+
+  - name: Add nodes to hadoop-cluster group
+    add_host:  
+      name: "{{ hostvars[local_loop]['inventory_hostname'] }}"
+      ansible_host: "{{ hostvars[local_loop]['ansible_host'] }}"
+      ansible_ssh_host: "{{ hostvars[local_loop]['ansible_host'] }}"
+      ansible_user: "{{ hostvars[local_loop]['ansible_user']|default('root') }}"
+      ansible_ssh_private_key_file: "{{ hostvars[local_loop]['ansible_ssh_private_key_file']|default(omit) }}"
+      ansible_ssh_pass: "{{ hostvars[local_loop]['ansible_ssh_pass']|default(omit) }}"
+      ansible_become_user: root
+      groups: hadoop-cluster
+    loop_control:
+      loop_var: local_loop
+    with_items: "{{ groups['all'] }}"
+
+  - name: Show groups['all']
+    debug: msg="{{ groups['all'] }}"
+
+  - name: Show hadoop-cluster
+    debug: msg="{{ groups['hadoop-cluster'] }}"
+
+  - name: Add node to ambari-server group
+    add_host:
+      name: "{{ hostvars[local_loop]['inventory_hostname'] }}"
+      ansible_host: "{{ hostvars[local_loop]['ansible_host'] }}"
+      ansible_ssh_host: "{{ hostvars[local_loop]['ansible_host'] }}"
+      ansible_user: "{{ hostvars[local_loop]['ansible_user']|default('root') }}"
+      ansible_ssh_private_key_file: "{{ hostvars[local_loop]['ansible_ssh_private_key_file']|default(omit) }}"
+      ansible_ssh_pass: "{{ hostvars[local_loop]['ansible_ssh_pass']|default(omit) }}"
+      ansible_become_user: root
+      groups: ambari-server
+    loop_control:
+      loop_var: local_loop
+    when: hostvars[local_loop]['ambari_server'] is defined and hostvars[local_loop]['ambari_server']
+    with_items: "{{ groups['all'] }}"
+
+  - name: Show groups['ambari-server']
+    debug: msg="{{ groups['ambari-server'] }}"
+
+  - name: print out groups
+    debug:
+      msg: "{{ hostvars[item]['ansible_fqdn']  }}"
+    with_items: "{{ groups['slave-nodes']  }}"
+
+  - name: Upload the blueprint and the cluster creation template
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: 0640
+      force: yes
+    with_items:
+      - src: "{{ cluster_template_file }}"
+        dest: "/tmp/cluster_template"
+
+  - name: Slurp the cluster creation template
+    slurp:
+      src: '/tmp/cluster_template'
+    register: cluster_template
+
+  - name: print out group ambari-server
+    debug:
+      msg: "{{cluster_template.content | b64decode }}"
+
+
+  - name: Load default variables
+    include_vars:
+      file: '../defaults/main.yml'
+
+  - name: Load variables
+    include_vars: "{{ item }}"
+    with_first_found:
+      - files:
+          - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}-{{ ansible_distribution_major_version }}.yml"
+          - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+          - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+          - "{{ ansible_os_family|lower }}.yml"
+          - defaults.yml
+        paths:
+          - ../../roles/ambari-blueprint/vars
+
+  - name: Upload the blueprint and the cluster creation template
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: 0640
+      force: yes
+    with_items:
+      - src: "{{ blueprint_file }}"
+        dest: "/tmp/{{ blueprint_name }}"
+      - src: "{{ cluster_template_file }}"
+        dest: "/tmp/cluster_template"
+
+  - name: print out minor version
+    debug:
+      msg: "{{ hdp_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','') }}"
+
